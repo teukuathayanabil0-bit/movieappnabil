@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MovieWind — Nonton Film & Series</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f0f0f;--card:#1a1a1a;
+  --red:#e50914;--green:#46d369;
+  --text:#fff;--muted:#888;
+  --border:rgba(255,255,255,0.08);--nav-h:64px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block}
+button{font-family:'Outfit',sans-serif;cursor:pointer;border:none;outline:none}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+
+/* ── NAV ── */
+#nav{position:fixed;top:0;left:0;right:0;z-index:999;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 4%;transition:background .4s}
+#nav::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.85),transparent);pointer-events:none;transition:opacity .4s}
+#nav.solid{background:#0f0f0f}
+#nav.solid::after{opacity:0}
+.nLogo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--red);position:relative;z-index:1;text-shadow:0 0 20px rgba(229,9,20,.5);flex-shrink:0;cursor:pointer}
+.nLinks{display:flex;gap:18px;align-items:center;position:relative;z-index:1}
+.nLink{font-size:13px;font-weight:500;color:rgba(255,255,255,.65);background:none;padding:4px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;white-space:nowrap}
+.nLink:hover,.nLink.active{color:#fff}
+.nLink.active{border-color:var(--red)}
+.nRight{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.sBox{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:7px 12px;transition:border-color .2s,background .2s}
+.sBox:focus-within{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.08)}
+#sIn{background:none;border:none;outline:none;color:#fff;font-size:13px;width:180px;font-family:'Outfit',sans-serif}
+#sIn::placeholder{color:var(--muted)}
+.nAv{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,var(--red),#c0392b);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0}
+
+/* ── HERO ── */
+#hero{position:relative;height:88vh;min-height:500px;overflow:hidden}
+#heroBg{position:absolute;inset:0;background-size:cover;background-position:center 15%;transform:scale(1.05);animation:hZ 20s ease-in-out infinite alternate}
+@keyframes hZ{from{transform:scale(1.05)}to{transform:scale(1.1)}}
+#heroVig{position:absolute;inset:0;background:linear-gradient(to right,rgba(15,15,15,.98) 0%,rgba(15,15,15,.65) 38%,transparent 65%),linear-gradient(to top,rgba(15,15,15,1) 0%,rgba(15,15,15,.3) 22%,transparent 50%)}
+#heroC{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4% 80px}
+.hBadge{display:inline-flex;align-items:center;gap:6px;background:var(--red);border-radius:4px;padding:4px 12px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;width:fit-content}
+#hTitle{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,7vw,96px);line-height:.92;max-width:560px;margin-bottom:14px;text-shadow:0 2px 20px rgba(0,0,0,.7)}
+.hMeta{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.hMatch{color:var(--green);font-weight:700;font-size:14px}
+.hYear,.hDur{color:var(--muted);font-size:13px}
+.hTag{padding:2px 8px;border:1px solid rgba(255,255,255,.3);border-radius:3px;font-size:11px;color:rgba(255,255,255,.78)}
+#hDesc{font-size:14px;line-height:1.65;color:rgba(255,255,255,.82);max-width:420px;margin-bottom:24px}
+.hBtns{display:flex;gap:10px;flex-wrap:wrap}
+.btnRed{display:inline-flex;align-items:center;gap:8px;padding:12px 30px;background:var(--red);color:#fff;border-radius:6px;font-size:15px;font-weight:700;transition:background .2s,transform .15s;cursor:pointer}
+.btnRed:hover{background:#c0392b;transform:scale(1.03)}
+.btnGray{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:rgba(255,255,255,.14);color:#fff;border-radius:6px;font-size:15px;font-weight:600;backdrop-filter:blur(8px);transition:background .2s,transform .15s;cursor:pointer}
+.btnGray:hover{background:rgba(255,255,255,.22);transform:scale(1.03)}
+
+/* ── MAIN & SEARCH ── */
+#main{position:relative;z-index:2;margin-top:-80px;padding-bottom:60px}
+#sPage{display:none;padding:calc(var(--nav-h)+30px) 4% 40px;min-height:100vh}
+#sPage.show{display:block}
+.sInfo{font-size:16px;font-weight:600;color:var(--muted);margin-bottom:20px}
+.sInfo b{color:#fff}
+.sGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px}
+
+/* ── ROWS ── */
+.row{padding:0 4%;margin-bottom:44px}
+.rHead{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.rTtl{font-size:18px;font-weight:700}
+.rMore{font-size:12px;color:var(--green);font-weight:600;cursor:pointer;opacity:0;transition:opacity .2s;margin-left:4px}
+.row:hover .rMore{opacity:1}
+.rTrack{display:flex;gap:6px;overflow-x:auto;overflow-y:visible;padding-bottom:14px;padding-top:8px;scrollbar-width:none;-ms-overflow-style:none}
+.rTrack::-webkit-scrollbar{display:none}
+
+/* ── CARD ── */
+.card{flex-shrink:0;width:clamp(124px,12vw,172px);border-radius:6px;overflow:visible;cursor:pointer;position:relative;transition:transform .26s cubic-bezier(.25,.46,.45,.94),z-index 0s .26s}
+.card:hover{transform:scale(1.4);z-index:100;transition:transform .26s cubic-bezier(.25,.46,.45,.94),z-index 0s}
+.rTrack>.card:nth-child(1):hover,.rTrack>.card:nth-child(2):hover{transform-origin:left center}
+.rTrack>.card:nth-last-child(1):hover,.rTrack>.card:nth-last-child(2):hover{transform-origin:right center}
+.cIn{border-radius:6px;overflow:hidden;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.6);transition:box-shadow .26s}
+.card:hover .cIn{box-shadow:0 20px 60px rgba(0,0,0,.95)}
+.cImg{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;background:var(--card);transition:filter .26s}
+.card:hover .cImg{filter:brightness(.35)}
+.cOv{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 9px 9px;background:linear-gradient(to top,rgba(0,0,0,.92),transparent 52%);opacity:0;transition:opacity .2s .05s;border-radius:6px}
+.card:hover .cOv{opacity:1}
+.cActs{display:flex;gap:4px;align-items:center;margin-bottom:7px}
+.cPlay{width:32px;height:32px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;padding-left:2px;flex-shrink:0;transition:transform .15s,background .15s}
+.cPlay:hover{transform:scale(1.12);background:#c0392b}
+.cIco{width:26px;height:26px;border-radius:50%;background:rgba(20,20,20,.9);border:1.5px solid rgba(255,255,255,.4);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s}
+.cIco:hover{border-color:#fff}
+.cName{font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.cMeta{display:flex;gap:4px;align-items:center}
+.cM{color:var(--green);font-size:9.5px;font-weight:700}
+.cY{color:var(--muted);font-size:9.5px}
+.cB{padding:1px 4px;border:1px solid rgba(255,255,255,.3);border-radius:2px;font-size:8.5px;color:rgba(255,255,255,.65)}
+
+/* ── TOP 10 ── */
+.cardT{width:clamp(155px,15vw,210px);display:flex;align-items:flex-end;background:transparent;overflow:visible}
+.tNum{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,9.5vw,108px);line-height:.85;color:transparent;-webkit-text-stroke:2.5px rgba(255,255,255,.4);margin-right:-10px;z-index:1;flex-shrink:0;pointer-events:none;user-select:none}
+.tPos{flex:1;border-radius:6px;overflow:hidden;position:relative;box-shadow:4px 0 18px rgba(0,0,0,.7)}
+.tPos img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;transition:filter .26s}
+.cardT:hover .tPos img{filter:brightness(.35)}
+.cardT .cOv{border-radius:6px}
+.cardT:hover{transform:scale(1.4);z-index:100}
+
+/* ══════════════════════════════════
+   PLAYER MODAL (full screen style)
+══════════════════════════════════ */
+#modal{
+  display:none;position:fixed;inset:0;z-index:2000;
+  background:rgba(0,0,0,.95);
+  align-items:center;justify-content:center;
+  padding:12px;
+}
+#modal.open{display:flex}
+
+#mBox{
+  width:100%;max-width:1000px;
+  background:#111;border-radius:12px;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06),0 30px 80px rgba(0,0,0,1);
+  animation:mIn .28s cubic-bezier(.34,1.46,.64,1) both;
+  max-height:96vh;overflow-y:auto;scrollbar-width:none;
+}
+#mBox::-webkit-scrollbar{display:none}
+@keyframes mIn{from{opacity:0;transform:scale(.9) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* player area */
+#mPlayer{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+#mFrame{width:100%;height:100%;border:none;display:block}
+
+/* server selector */
+#mServers{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px;background:#0a0a0a;border-bottom:1px solid rgba(255,255,255,.06);
+  flex-wrap:wrap;
+}
+.srvLabel{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+.srvBtn{
+  padding:5px 14px;border-radius:5px;font-size:12px;font-weight:600;
+  background:rgba(255,255,255,.07);color:rgba(255,255,255,.65);
+  border:1px solid rgba(255,255,255,.1);transition:all .2s;cursor:pointer;
+}
+.srvBtn:hover{background:rgba(255,255,255,.14);color:#fff}
+.srvBtn.on{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* episode selector (for series) */
+#mEpisodes{
+  display:none;padding:12px 16px;background:#0d0d0d;border-bottom:1px solid rgba(255,255,255,.06);
+}
+#mEpisodes.show{display:block}
+.epLabel{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.epSels{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.epSel{
+  padding:6px 14px;border-radius:5px;font-size:12px;font-weight:600;
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.1);cursor:pointer;
+  font-family:'Outfit',sans-serif;
+}
+.epSel:hover{background:rgba(255,255,255,.12);color:#fff}
+
+/* close button */
+.mClose{
+  position:absolute;top:10px;right:10px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(0,0,0,.85);border:1.5px solid rgba(255,255,255,.2);
+  color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;
+  z-index:20;transition:background .2s,border-color .2s;cursor:pointer;
+}
+.mClose:hover{background:var(--red);border-color:var(--red)}
+
+/* info section */
+#mInfo{padding:18px 22px 24px}
+.mTop{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:8px}
+#mTitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;line-height:1}
+.mActs{display:flex;gap:7px;flex-shrink:0;margin-top:3px}
+.mBtn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;background:transparent;border:1.5px solid rgba(255,255,255,.3);color:#fff;transition:border-color .2s,background .2s;cursor:pointer}
+.mBtn:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.mBtn.on{background:rgba(255,255,255,.12);border-color:#fff}
+.mMeta{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.mMatch{color:var(--green);font-weight:700;font-size:13px}
+.mYear{color:var(--muted);font-size:12px}
+.mHd{padding:1px 6px;border:1px solid rgba(255,255,255,.3);border-radius:3px;font-size:10px;color:rgba(255,255,255,.65)}
+#mDesc{font-size:13px;line-height:1.68;color:rgba(255,255,255,.78);margin-bottom:12px}
+.mTags{display:flex;gap:6px;flex-wrap:wrap}
+.mTag{padding:3px 11px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:11px;color:rgba(255,255,255,.65)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(70px);background:rgba(15,15,15,.96);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:11px 20px;font-size:13px;font-weight:500;color:#fff;white-space:nowrap;transition:transform .28s,opacity .28s;z-index:3000;opacity:0;pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:36px 4%;color:var(--muted);font-size:12px}
+.fLogo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--red);margin-bottom:18px}
+.fLinks{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px}
+.fLinks a{color:var(--muted);transition:color .2s}
+.fLinks a:hover{color:#fff}
+.fBot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:rgba(255,255,255,.25);font-size:11px}
+.fDisc{margin-top:10px;font-size:10px;color:rgba(255,255,255,.2);line-height:1.6}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .nLinks{display:none}
+  #sIn{width:120px}
+  #hTitle{font-size:clamp(36px,12vw,60px)}
+  #hDesc{font-size:13px;max-width:280px}
+  .card{width:clamp(96px,24vw,128px)}
+  .cardT{width:clamp(128px,30vw,168px)}
+  .sGrid{grid-template-columns:repeat(auto-fill,minmax(105px,1fr))}
+  #mTitle{font-size:22px}
+  #mInfo{padding:14px 16px 20px}
+  #mServers{padding:8px 12px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nLogo" onclick="goHome()">MOVIEWIND</div>
+  <div class="nLinks">
+    <button class="nLink active" data-f="home">Beranda</button>
+    <button class="nLink" data-f="Serial">Serial TV</button>
+    <button class="nLink" data-f="Aksi">Aksi</button>
+    <button class="nLink" data-f="Drama">Drama</button>
+    <button class="nLink" data-f="Korea">Korea</button>
+    <button class="nLink" data-f="Anime">Anime</button>
+    <button class="nLink" data-f="Horror">Horror</button>
+  </div>
+  <div class="nRight">
+    <div class="sBox">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="sIn" type="text" placeholder="Cari film...">
+    </div>
+    <div class="nAv">N</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div id="heroBg"></div>
+  <div id="heroVig"></div>
+  <div id="heroC">
+    <div class="hBadge">🔥 #1 di Indonesia</div>
+    <div id="hTitle">INTERSTELLAR</div>
+    <div class="hMeta">
+      <span class="hMatch">99% Cocok</span>
+      <span class="hYear">2014</span>
+      <span class="hTag">Sci-Fi</span>
+      <span class="hTag">Drama</span>
+      <span class="hTag">4K</span>
+    </div>
+    <div id="hDesc">Penjelajah menembus cacing lubang di luar angkasa demi menyelamatkan masa depan umat manusia.</div>
+    <div class="hBtns">
+      <button class="btnRed" onclick="openModal('Interstellar')">▶&nbsp; Tonton Sekarang</button>
+      <button class="btnGray" onclick="openModal('Interstellar')">ℹ&nbsp; Info Lanjut</button>
+    </div>
+  </div>
+</section>
+
+<div id="main"></div>
+<div id="sPage">
+  <div class="sInfo" id="sInfo"></div>
+  <div class="sGrid" id="sGrid"></div>
+</div>
+
+<footer>
+  <div class="fLogo">MOVIEWIND</div>
+  <div class="fLinks">
+    <a href="#">Beranda</a><a href="#">Tentang</a><a href="#">Kontak</a><a href="#">DMCA</a>
+  </div>
+  <div class="fBot">
+    <span>© 2024 MovieWind</span><span>🇮🇩 Indonesia</span>
+  </div>
+  <div class="fDisc">MovieWind tidak menyimpan file video apapun di server kami. Semua konten disediakan oleh pihak ketiga. MovieWind hanya menyediakan direktori dan embed player.</div>
+</footer>
+
+<!-- MODAL -->
+<div id="modal" onclick="bgClose(event)">
+  <div id="mBox">
+    <!-- Player -->
+    <div id="mPlayer">
+      <iframe id="mFrame" src="" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen" referrerpolicy="no-referrer"></iframe>
+      <button class="mClose" onclick="closeModal()">✕</button>
+    </div>
+    <!-- Server Selector -->
+    <div id="mServers">
+      <span class="srvLabel">🖥 Server:</span>
+      <button class="srvBtn on" onclick="switchServer(0)">VidSrc #1</button>
+      <button class="srvBtn" onclick="switchServer(1)">VidSrc #2</button>
+      <button class="srvBtn" onclick="switchServer(2)">2Embed</button>
+      <button class="srvBtn" onclick="switchServer(3)">MultiEmbed</button>
+      <button class="srvBtn" onclick="switchServer(4)">EmbedSu</button>
+    </div>
+    <!-- Episode Selector (for TV) -->
+    <div id="mEpisodes">
+      <div class="epLabel">📺 Episode</div>
+      <div class="epSels" id="epSels"></div>
+    </div>
+    <!-- Info -->
+    <div id="mInfo">
+      <div class="mTop">
+        <div id="mTitle"></div>
+        <div class="mActs">
+          <button class="mBtn" id="bWL"   onclick="toggleWL()"   title="Daftar Saya">＋</button>
+          <button class="mBtn" id="bLike" onclick="toggleLike()" title="Suka">👍</button>
+          <button class="mBtn"            onclick="doNotify()"   title="Notifikasi">🔔</button>
+        </div>
+      </div>
+      <div class="mMeta" id="mMeta"></div>
+      <div id="mDesc"></div>
+      <div class="mTags" id="mTags" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATABASE
+   Format: [title, tmdbPoster, year, match, badge, tags[], ytId, desc, tmdbId, isTv, seasons]
+   tmdbId  = TMDB numeric ID (used for embed URLs)
+   isTv    = true if series
+   seasons = number of seasons (for episode picker)
+═══════════════════════════════════════════════════════ */
+const DB = [
+  // ── MARVEL ──────────────────────────────────────────────────────────
+  ["Avengers: Endgame","/or06FN3Dka5tukK1e9sl16pB3iy.jpg","2019","99","4K",["Aksi","Marvel","Superhero"],"TcMBFSGVi1c","Para pahlawan bersatu membalikkan kerusakan Thanos.",299534,false,0],
+  ["Avengers: Infinity War","/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg","2018","98","4K",["Aksi","Marvel","Superhero"],"6ZfuNTqbHE8","Thanos mengumpulkan Infinity Stones untuk memusnahkan setengah kehidupan.",299536,false,0],
+  ["Spider-Man: No Way Home","/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg","2021","95","HD",["Aksi","Marvel","Superhero"],"JfVOs4VSpmA","Peter Parker membuka pintu multiverse dengan konsekuensi dahsyat.",634649,false,0],
+  ["Spider-Man Homecoming","/c24sv2weTHPsmDa7jEMN0kzaLV0.jpg","2017","90","HD",["Aksi","Marvel"],"rk-dF1lIbIg","Peter Parker menyeimbangkan SMA dengan tugas Spider-Man.",315635,false,0],
+  ["Spider-Man: Far From Home","/4q2hz2m7hubTGPFH5m6YnPMwIjQ.jpg","2019","88","HD",["Aksi","Marvel"],"Nt9L1NkFM9E","Peter Parker liburan ke Eropa tapi misi baru menunggunya.",429617,false,0],
+  ["Black Panther","/uxzzxijgPIY7slzFvMotPv8wjKA.jpg","2018","92","HD",["Aksi","Marvel","Superhero"],"xjDjIWPwcPU","T'Challa kembali ke Wakanda mewarisi tahta yang segera ditantang.",284054,false,0],
+  ["Black Panther: Wakanda Forever","/sv1xJUazXeYqALzczSZ3O6nkH75.jpg","2022","85","HD",["Aksi","Marvel"],"_Z3QKkl1WyM","Wakanda mempertahankan kerajaannya dari ancaman bawah laut.",505642,false,0],
+  ["Thor: Ragnarok","/rzRwTcFvttcN1ZpX2xv4j3tSdJu.jpg","2017","93","HD",["Aksi","Marvel","Komedi"],"ue80QwJ1HGY","Thor menyelamatkan Asgard dari Hela si dewi kematian.",284053,false,0],
+  ["Thor: Love and Thunder","/pIkRyD18kl4FhoCNQuWxWu5cBLM.jpg","2022","78","HD",["Aksi","Marvel","Komedi"],"Go8nTmfrQd8","Thor melawan Gorr sang Pembantai Dewa.",616037,false,0],
+  ["Doctor Strange","/uGBVAWorkYvuh71PX9yuNxU5iqV.jpg","2016","88","HD",["Aksi","Marvel","Sci-Fi"],"HSzWmgaOQBE","Ahli bedah genius menjelajahi alam sihir.",284052,false,0],
+  ["Doctor Strange in the MOM","/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg","2022","82","HD",["Aksi","Marvel","Sci-Fi"],"aWzlQ2N6qqg","Doctor Strange menjelajahi multiverse berbahaya.",453395,false,0],
+  ["Iron Man","/78lPtwv72VFaoXpnaRyXU7M8DEq.jpg","2008","96","HD",["Aksi","Marvel"],"8ugaeA-nMTc","Tony Stark membangun armor bertenaga untuk melarikan diri.",1726,false,0],
+  ["Captain America: Civil War","/rAGiXaUfPzY7CDEyNKUofk3Kw2e.jpg","2016","94","4K",["Aksi","Marvel"],"dKrVegVI0Us","Para Avengers terpecah menjadi dua kubu.",271110,false,0],
+  ["Captain Marvel","/AtsgWhDnHTq68L0lLsUrCnM7TLy.jpg","2019","82","HD",["Aksi","Marvel","Sci-Fi"],"Z1_ej3wdTNM","Pahlawan luar angkasa menemukan kembali masa lalunya.",299537,false,0],
+  ["Guardians of the Galaxy","/r7vmZjiyZw9rpJMQJdXpjgivebr.jpg","2014","93","HD",["Aksi","Marvel","Komedi"],"2LIQ3if7Var","Kelompok pecundang antargalaksi menyelamatkan semesta.",118340,false,0],
+  ["Guardians of Galaxy Vol.2","/y4MBh0EjBlMuOzv9axM4qJlmhzz.jpg","2017","90","HD",["Aksi","Marvel","Komedi"],"dW1BIid8Osg","Para penjaga menyelidiki asal-usul ayah Peter Quill.",283995,false,0],
+  ["Guardians of Galaxy Vol.3","/r2J02Z6a5D8EFaoyQ7DJOSFgxcW.jpg","2023","94","HD",["Aksi","Marvel","Komedi"],"u3V5KDHRQvk","Perjalanan terakhir mengungkap masa lalu gelap Rocket.",447365,false,0],
+  ["Shang-Chi","/1BIoJGFbfd6zjnlB2jMtOp9Zb8L.jpg","2021","90","HD",["Aksi","Marvel"],"8YjFbMbfXaQ","Pahlawan baru Marvel menghadapi organisasi rahasia.",566525,false,0],
+  ["Loki Season 2","/4fB3ua35bMjfIGJMrmwuNvqzXmS.jpg","2023","87","HD",["Sci-Fi","Marvel","Serial"],"nW948Agt2_Q","Loki melintasi waktu menyelamatkan semua timeline.",84958,true,2],
+  ["Moon Knight","/6O3nRuMsGiZfMCH3JYVTS8XDQOX.jpg","2022","84","HD",["Aksi","Marvel","Serial"],"x7Krla_lF4I","Pria dengan gangguan identitas menjadi avatar dewa bulan.",92749,true,1],
+  // ── AKSI & PETUALANGAN ──────────────────────────────────────────────
+  ["Top Gun: Maverick","/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg","2022","98","4K",["Aksi","Drama"],"giXco2jaZ_4","Pete Mitchell melatih Top Guns generasi baru dalam misi mustahil.",361743,false,0],
+  ["John Wick","/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg","2014","92","HD",["Aksi","Thriller"],"C0BMx-qxsP4","Mantan pembunuh bayaran membalas kematian anjing kesayangannya.",245891,false,0],
+  ["John Wick: Chapter 2","/hXWBc0ioZP3cN4zCu6SN7bAB9Nn.jpg","2017","89","HD",["Aksi","Thriller"],"ChpDp7HFDO8","John Wick kembali karena kontrak darah dari masa lalu.",343668,false,0],
+  ["John Wick: Chapter 3","/ziEuG1essDuWuC5lpXUVyfoi9Cy.jpg","2019","90","HD",["Aksi","Thriller"],"M7XM597XO94","John Wick diburu ribuan pembunuh bayaran.",458156,false,0],
+  ["John Wick: Chapter 4","/6DrHO1jr3qVrViUO6s6kFiAGM7.jpg","2023","93","HD",["Aksi","Thriller"],"qEVUtrk8_B4","John Wick melawan High Table untuk kebebasannya.",603692,false,0],
+  ["Mission: Impossible 7","/NNxYkU70HPurnNCSiCjYAmacwm.jpg","2023","91","HD",["Aksi","Thriller"],"avz06PDqDbM","Ethan Hunt menghadapi entitas AI paling berbahaya.",575264,false,0],
+  ["Mission: Impossible Fallout","/AkJQpZp9WoNdj7pLYSj1L0RcMMN.jpg","2018","93","HD",["Aksi","Thriller"],"wb49-oV0F78","Ethan Hunt mengejar senjata nuklir yang hilang.",353081,false,0],
+  ["Uncharted","/sqLowacltbZLRl9KjN57jeln203.jpg","2022","82","HD",["Aksi","Petualangan"],"uf6A03RFDu8","Pemburu harta muda mencari harta karun terbesar sepanjang sejarah.",335787,false,0],
+  ["Red Notice","/wdE6ewaKZHr62bLqCn7A2DiGShT.jpg","2021","83","HD",["Aksi","Komedi"],"Kz18lmFRcaE","Agen FBI terpaksa kerja sama dengan dua pencuri kelas dunia.",736526,false,0],
+  ["Bullet Train","/j8szC6qpE2xHSpU5UoVnAVOXMnC.jpg","2022","83","HD",["Aksi","Komedi"],"Y2dHOdSVuCE","Lima pembunuh bayaran di kereta cepat Jepang.",718930,false,0],
+  ["The Batman","/74xTEgt7R36Fpooo50r9T25onhq.jpg","2022","91","HD",["Aksi","DC","Thriller"],"mqqft2x_Aa4","Batman mengungkap korupsi di Gotham sambil hadapi Riddler.",414906,false,0],
+  ["The Dark Knight","/qJ2tW6WMUDux911r6m7haRef0WH.jpg","2008","99","4K",["Aksi","DC","Crime","Klasik"],"kmJLuwdLCF4","Batman vs Joker — mahakarya superhero tak tertandingi.",155,false,0],
+  ["Wonder Woman","/gGBu5LAMpIlMKvfJCOjpCY0v1JV.jpg","2017","89","HD",["Aksi","DC","Fantasi"],"5rucDMjGnEA","Putri Amazon mengakhiri Perang Dunia Pertama.",297762,false,0],
+  ["Avatar: Way of Water","/8UlWHLMpgZm9bx6QYh0NFoq67TZ.jpg","2022","88","4K",["Aksi","Sci-Fi","Petualangan"],"a8Gx8wiNbs8","Jake Sully menjelajahi kawasan bawah laut Pandora.",76600,false,0],
+  ["Avatar","/jRXYjXNq0Cs2Yhe5MkWe6gsnHEH.jpg","2009","90","HD",["Aksi","Sci-Fi","Petualangan"],"5PSNL1qE6VY","Prajurit berpihak pada penduduk asli Na'vi di Pandora.",19995,false,0],
+  ["Mad Max: Fury Road","/hA2ple9q4qnwxp3hKVNhroipsir.jpg","2015","96","4K",["Aksi","Sci-Fi"],"hEJnMQG9ev8","Pejuang memimpin pelarian dari penguasa tiran di dunia kiamat.",76341,false,0],
+  ["Fast & Furious 9","/lAXONuqg41NhbkZPvLIBN7VmmR2.jpg","2021","78","HD",["Aksi","Balapan"],"32RAq6JzY-4","Dom Toretto menghadapi saudaranya yang jadi musuh.",385128,false,0],
+  ["Fast X","/fiVW06jE7z9YnO4trhaMEdclSiC.jpg","2023","80","HD",["Aksi","Balapan"],"eoOaKFbvGDg","Musuh baru membalas dendam kepada Dom dan keluarganya.",385687,false,0],
+  ["1917","/kXfqcdQKsToO0OUXHcrrNCHDBXO.jpg","2019","95","HD",["Drama","Perang","Sejarah"],"YqNYrYUiMfg","Dua prajurit diberi misi mustahil menyelamatkan 1600 nyawa.",530915,false,0],
+  ["Dunkirk","/ebSnODDg9LuCelHVGDECgizMCsK.jpg","2017","92","4K",["Drama","Perang","Sejarah"],"F-eMt3KEcNE","Evakuasi dramatis 400.000 tentara di Dunkirk.",374720,false,0],
+  ["Hacksaw Ridge","/2DqNOmHQUKdpZl3RMn2akEFleXf.jpg","2016","95","HD",["Drama","Perang","Sejarah"],"s2-1hz1juBI","Prajurit tanpa senjata menyelamatkan 75 nyawa di medan perang.",324786,false,0],
+  // ── SCI-FI ──────────────────────────────────────────────────────────
+  ["Interstellar","/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg","2014","99","4K",["Sci-Fi","Drama","Petualangan"],"zSWdZVtXT7E","Penjelajah menembus cacing lubang untuk selamatkan masa depan manusia.",157336,false,0],
+  ["Dune: Part One","/d5NXSklXo0qyIYkgV94XAgMIckC.jpg","2021","93","4K",["Sci-Fi","Epik","Petualangan"],"n9xhJrPXop4","Putra bangsawan tiba di planet gurun paling berbahaya.",438631,false,0],
+  ["Dune: Part Two","/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg","2024","97","4K",["Sci-Fi","Epik","Petualangan"],"Way9Dexny3w","Paul bersatu dengan Fremen dalam balas dendam epik.",693134,false,0],
+  ["The Matrix","/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg","1999","97","HD",["Sci-Fi","Aksi","Klasik"],"vKQi3bBA1y8","Realitas yang kita kenal hanyalah simulasi komputer.",603,false,0],
+  ["Inception","/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg","2010","98","4K",["Sci-Fi","Thriller","Drama"],"YoHD9XEInc0","Pencuri ide dari alam mimpi mendapat misi menanam ide.",27205,false,0],
+  ["Arrival","/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg","2016","92","HD",["Sci-Fi","Drama","Mystery"],"tFMo3UJ4B4g","Ahli bahasa berkomunikasi dengan alien misterius.",329865,false,0],
+  ["Gravity","/kZ2nZw8D681aphja4zKVCfHan3K.jpg","2013","90","HD",["Sci-Fi","Drama","Thriller"],"OiTiKOy59o4","Dua astronaut bertahan setelah bencana di orbit.",49047,false,0],
+  ["Edge of Tomorrow","/fUCOhRSdNmWwHIDzBnmfRFBWFGB.jpg","2014","91","HD",["Sci-Fi","Aksi"],"UVayjB5a37s","Prajurit terjebak loop waktu melawan alien.",137113,false,0],
+  ["The Martian","/5aGhaIHYuQbqlHWvWYqMCnj40y2.jpg","2015","91","HD",["Sci-Fi","Drama","Petualangan"],"ej3ioOneTy8","Astronaut terdampar di Mars berjuang sendiri.",286217,false,0],
+  ["Blade Runner 2049","/gajva3G62rXtnAffFd1EBwAhyiX.jpg","2017","89","4K",["Sci-Fi","Drama"],"gD6WPp4sRZc","Blade runner muda temukan rahasia yang guncang dunia.",335984,false,0],
+  ["Tenet","/k68nPLbIST6NP96JmTxmZijZchr.jpg","2020","78","HD",["Sci-Fi","Aksi","Thriller"],"LdOM0x0XDMo","Agen rahasia memanipulasi waktu cegah PD III.",577922,false,0],
+  ["Everything Everywhere All at Once","/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg","2022","97","HD",["Sci-Fi","Komedi","Drama"],"wxN1T1uxQ2g","Ibu melintasi multiverse untuk selamatkan semesta.",545611,false,0],
+  // ── ANIMASI ─────────────────────────────────────────────────────────
+  ["The Super Mario Bros.","/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg","2023","88","HD",["Animasi","Keluarga","Komedi"],"TnGl01FkMMo","Mario dan Luigi berpetualang di dunia jamur.",502356,false,0],
+  ["Soul","/hm58fzdj8p7gDdaZ3hAMqSbtQUQ.jpg","2020","94","4K",["Animasi","Keluarga","Musikal"],"xOsLIiBStEs","Guru musik terdampar di alam jiwa sebelum sempat meraih impian.",508442,false,0],
+  ["Coco","/gGEsBPAijhVUFoiNpgZXqRVWJt2.jpg","2017","95","HD",["Animasi","Keluarga","Musikal"],"jEjUAnPc4Cc","Miguel masuk Tanah Orang Mati cari leluhur musisi.",354912,false,0],
+  ["Encanto","/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg","2021","87","HD",["Animasi","Keluarga","Musikal"],"CaimKeDcSf0","Keluarga Madrigal yang ajaib — kecuali Mirabel.",568124,false,0],
+  ["Luca","/frnlys7O6dTjMIHxIo3DTLQ1fEZ.jpg","2021","86","HD",["Animasi","Keluarga"],"mYfJxlgR2jw","Monster laut muda berpetualang di kota Italia.",508943,false,0],
+  ["Turning Red","/qSdjKPABqG9gji4yBMDFd4Mjozk.jpg","2022","88","HD",["Animasi","Keluarga","Komedi"],"XdKv3ZFMykM","Gadis 13 tahun berubah jadi panda merah besar.",755566,false,0],
+  ["Elemental","/6oH378KUfgdm058FbRNecBq4zaM.jpg","2023","80","HD",["Animasi","Keluarga","Romantis"],"gFLcwFpAcAc","Api dan air jatuh cinta di kota empat elemen.",976573,false,0],
+  // ── DRAMA & THRILLER ────────────────────────────────────────────────
+  ["Parasite","/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg","2019","98","HD",["Drama","Thriller","Korea"],"5xH0HfJHsaY","Keluarga miskin menyusup ke kehidupan keluarga kaya.",496243,false,0],
+  ["Oppenheimer","/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg","2023","96","4K",["Drama","Sejarah","Thriller"],"uYPbbksJxIg","Kisah ilmuwan di balik senjata paling mematikan.",872585,false,0],
+  ["Joker","/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg","2019","92","HD",["Drama","Thriller","Crime"],"zAGVQLHpphc","Komedian gagal berubah jadi kriminal ikonik Gotham.",475557,false,0],
+  ["The Godfather","/3bhkrj58Vtu7enYsLeFHIKB3exp.jpg","1972","99","HD",["Drama","Crime","Klasik"],"sY1S34973zA","Kisah epik dinasti kejahatan Keluarga Corleone.",238,false,0],
+  ["Shutter Island","/4m1Au3YkjqsxF8iwQy0fPYSxE0h.jpg","2010","96","HD",["Drama","Mystery","Thriller"],"5iaYLCiq5RM","Marsekal AS menyelidiki hilangnya pasien dari rumah sakit jiwa.",11324,false,0],
+  ["Gone Girl","/dvsrxhcPIF8C5TPUS50m5bhKvZj.jpg","2014","94","HD",["Drama","Mystery","Thriller"],"2-_oCi1K8o4","Suami jadi tersangka saat istri menghilang.",210577,false,0],
+  ["Knives Out","/pThyQovXQrws2wmHL233JDDVh.jpg","2019","94","HD",["Mystery","Drama","Komedi"],"qGqiHJTsRkQ","Detektif eksentrik selidiki kematian penulis kaya.",546554,false,0],
+  ["Glass Onion","/vDGr1OdrqqnmZGQFQe92an8Ldcb.jpg","2022","88","HD",["Mystery","Drama","Komedi"],"SZzGMpoxrEY","Detektif Blanc di pulau milik miliarder eksentrik.",661374,false,0],
+  ["Se7en","/6yoghtyTpznpBik8EngEmJskVUO.jpg","1995","97","HD",["Drama","Crime","Thriller"],"znmZoVkCjpI","Dua detektif kejar pembunuh berantai bertema 7 dosa.",807,false,0],
+  ["Fight Club","/pB8BM7pdSp6B6Ih7QpePils7bGb.jpg","1999","97","HD",["Drama","Thriller","Klasik"],"SUXWAEX2jlg","Klub pertarungan rahasia berevolusi jadi sesuatu berbahaya.",550,false,0],
+  ["Whiplash","/7fn624j5lj3xTme2SgiLCeuedmO.jpg","2014","96","HD",["Drama","Musikal"],"7d_jQycdQGo","Pemain drum berbakat bertemu konduktor sadis.",244786,false,0],
+  ["La La Land","/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg","2016","91","HD",["Romantis","Musikal","Drama"],"0pdqf4P9MB8","Aktris dan musisi jatuh cinta di LA sambil kejar impian.",313369,false,0],
+  ["The Holdovers","/VHmjUMBkBCzBM5K6CX3JKkSKHgn.jpg","2023","93","HD",["Drama","Komedi"],"AhKTpLHejCQ","Guru kaku temani siswa nakal selama liburan Natal.",1056360,false,0],
+  ["Past Lives","/k3waqVXkTFrmGDkQy9XZXNDJ9WK.jpg","2023","96","HD",["Drama","Romantis"],"kA7-zqBkODs","Dua sahabat Korea dipertemukan setelah dua puluh tahun.",1072790,false,0],
+  ["Saltburn","/qitHdRPXPYHodFHJsBLUh9QkJAb.jpg","2023","86","HD",["Drama","Thriller","Mystery"],"VlCeAWpFaVs","Mahasiswa Oxford terpesona kehidupan mewah temannya.",1182047,false,0],
+  ["Barbie","/iuFNMS8vlzmxHvehTX05AE5mkgt.jpg","2023","94","HD",["Komedi","Fantasi"],"pBk4NYhWNMM","Barbie berpetualang di dunia nyata bersama Ken.",346698,false,0],
+  ["Poor Things","/kCGlIMHnOm8JPXEaM7chaILFRSU.jpg","2023","90","HD",["Drama","Fantasi"],"RlqiAh0IdoI","Wanita dihidupkan kembali, menjelajahi dunia dengan bebas.",792307,false,0],
+  // ── HORROR ──────────────────────────────────────────────────────────
+  ["Midsommar","/7LEI8ulZzO5gy9Ww2NVCrKmc9Bp.jpg","2019","88","HD",["Horror","Mystery"],"1Pu9HJXa6kA","Festival musim panas Swedia berubah jadi ritual sekte mengerikan.",530385,false,0],
+  ["Hereditary","/r8hu8U0nhh13E0yrqkfYuBJjxOp.jpg","2018","90","HD",["Horror","Drama","Mystery"],"V6wWKNiq7fQ","Rahasia gelap keluarga terungkap setelah kematian nenek.",493922,false,0],
+  ["Get Out","/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg","2017","94","HD",["Horror","Thriller","Mystery"],"DzfpyUB60YY","Pemuda temukan konspirasi mengerikan di keluarga pacarnya.",419430,false,0],
+  ["A Quiet Place","/6yFoJTTQDlt8Eb8S2gk6O95kVVS.jpg","2018","92","HD",["Horror","Sci-Fi","Drama"],"WR7jupPOfJE","Keluarga bertahan dari monster pemburu suara.",447332,false,0],
+  ["Barbarian","/6Bfr2v0cGWygBpZkMq2KnQD5WZKX.jpg","2022","90","HD",["Horror","Thriller","Mystery"],"sPVDSCnfj4Y","Sesuatu lebih gelap tersembunyi di bawah Airbnb.",758323,false,0],
+  ["Talk to Me","/kdPMUKGll8mFCbNejuimcPQJmaBJ.jpg","2023","88","HD",["Horror","Thriller"],"kCCTcFaNHr0","Remaja buka portal ke dunia roh yang berbahaya.",967847,false,0],
+  ["M3GAN","/d9nBoowhjiiYc4FBNtQkPY7c11H.jpg","2022","80","HD",["Horror","Sci-Fi","Thriller"],"BRbAMHOyiF8","Boneka robot AI berubah obsesif dan mematikan.",536554,false,0],
+  // ── SERIAL ──────────────────────────────────────────────────────────
+  ["Squid Game","/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg","2021","97","HD",["Horror","Drama","Korea","Serial"],"oqxAJRvndBc","Peserta terlilit hutang bertaruh nyawa dalam permainan anak-anak.",93405,true,2],
+  ["All of Us Are Dead","/6SuMqHMIJHGCuPm66iJRbpWGaUH.jpg","2022","93","HD",["Horror","Korea","Serial"],"IN5TD4VRcSM","Sekolah jadi pusat wabah zombie — siswa berjuang bertahan.",93484,true,1],
+  ["Stranger Things","/49WJfeN0moxb9IPfGn8AIqMGskD.jpg","2022","96","HD",["Horror","Sci-Fi","Serial"],"oBkTm1GnlFI","Kelompok Hawkins hadapi ancaman dari Upside Down.",66732,true,4],
+  ["The Last of Us","/qrokpSHMSMhTCMVmhYnkT7TI2wj.jpg","2023","97","HD",["Horror","Drama","Serial"],"uLtkt8BonwM","Joel menyelundupkan Ellie melintasi Amerika yang hancur.",100088,true,2],
+  ["Wednesday","/9PFonBhy4cQy7hjriBoXClHpaMD.jpg","2022","91","HD",["Horror","Komedi","Serial"],"Di310WS8zLk","Wednesday Addams selidiki pembunuhan di Nevermore Academy.",119051,true,1],
+  ["Hellbound","/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg","2021","88","HD",["Horror","Korea","Serial"],"xe2nE4HNzTE","Makhluk supernatural antar manusia ke neraka.",122226,true,2],
+  ["Money Heist","/reEMJA1uzscCbkpeRJeTT2bjqUp.jpg","2021","93","HD",["Thriller","Drama","Serial"],"4_2gTNAJhg4","Para perampok hadapi konfrontasi terakhir yang epik.",71446,true,5],
+  ["Sandman","/q0GHjNgrLuVeeFJbXzSpWg7KGHY.jpg","2022","89","HD",["Fantasi","Drama","Serial"],"b3lAMEBXh2M","Penguasa alam mimpi memulihkan kekuatannya.",90802,true,1],
+  ["The Bear","/iADOJ8Zymht2JPMoy3R7xceZprc.jpg","2023","98","HD",["Drama","Komedi","Serial"],"eTABvx6yCTs","Carmen Berzatto bangun restoran impian di tengah tekanan.",136315,true,3],
+  ["Succession","/3GpNoDBclMVGnRrLMoFrmwFZfQF.jpg","2023","98","HD",["Drama","Komedi","Serial"],"OaTFURvQOWM","Perebutan kekuasaan Keluarga Roy di babak akhir.",63333,true,4],
+  ["Breaking Bad","/ggFHVNu6YYI5L9pCfOacjizRGt.jpg","2008","99","HD",["Drama","Crime","Thriller","Serial"],"XZ8daibM3AY","Guru kimia kanker jadi produsen narkoba paling ditakuti.",1396,true,5],
+  ["Better Call Saul","/fC2HDm5t0kR9HFt03esyfAB3d9d.jpg","2015","97","HD",["Drama","Crime","Thriller","Serial"],"HN4oydykJFc","Transformasi Jimmy McGill menjadi Saul Goodman.",60059,true,6],
+  ["House of the Dragon","/z2yahl2uefxDCl0nogcRBstwruJ.jpg","2022","88","HD",["Fantasi","Drama","Aksi","Serial"],"DotnJ7tCP8","Prequel GoT: perang saudara Targaryen.",94997,true,2],
+  ["The White Lotus","/6aYm4gGx5JTZJ5YTBWzq7CkDebc.jpg","2022","94","HD",["Drama","Mystery","Komedi","Serial"],"lCBbB5DQVHM","Satir kehidupan orang kaya di resort mewah.",93828,true,3],
+  ["Euphoria","/3Q0hd3heuWwDWpwcDkhQOA6TYWI.jpg","2022","86","HD",["Drama","Serial"],"4eDDt8mNFww","Remaja menghadapi candu, cinta, dan identitas.",85552,true,2],
+  ["Andor","/59SVNwLfoMnZPPB6ukW6dlPxAdI.jpg","2022","93","HD",["Sci-Fi","Drama","Serial"],"cKOegEuJYdk","Cassian Andor tumbuh menjadi pejuang perlawanan.",83867,true,2],
+  ["The Mandalorian","/eU1i6eHXlzMqZriZmrggZwdSpLc.jpg","2023","82","HD",["Sci-Fi","Aksi","Serial"],"cZfc7KhFCpA","Din Djarin dan Grogu melanjutkan perjalanan.",82856,true,3],
+  ["Ted Lasso","/qVuv2pIGKUbGBpAqOmLFKwJa11v.jpg","2023","88","HD",["Komedi","Drama","Serial"],"9YBa1RTGWDs","Pelatih optimis Amerika menginspirasi semua orang.",97546,true,3],
+  // ── DRAMA KOREA ─────────────────────────────────────────────────────
+  ["Crash Landing on You","/3OZ1CGwm7dVxABqMpNiuCjrYZbh.jpg","2019","97","HD",["Romantis","Drama","Korea","Serial"],"j1wQ2qdnW2I","Putri konglomerat mendarat di Korea Utara, jatuh cinta.",95178,true,1],
+  ["Vincenzo","/xhd4YiBaSkUEajvWKSZnqk7FYXY.jpg","2021","96","HD",["Drama","Crime","Korea","Serial"],"mjzPtj6P3uM","Pengacara mafia Italia lawan konglomerat Korea.",116507,true,1],
+  ["Extraordinary Attorney Woo","/kLNHCPpzpeBhbJfVhZVSe5SWxaK.jpg","2022","95","HD",["Drama","Hukum","Korea","Serial"],"cpNgKNsGHMg","Pengacara autis berbakat di dunia hukum Korea.",194764,true,1],
+  ["Itaewon Class","/g3IcSfAvJuwq6YqKtKOdxL9KqGK.jpg","2020","91","HD",["Drama","Bisnis","Korea","Serial"],"3YWKLiUGxKo","Bar kecil tumbuh jadi kerajaan bisnis kuliner.",97061,true,1],
+  ["Goblin","/dXbGJPpMMzMzSzEBzCmrJAKImK0.jpg","2016","96","HD",["Romantis","Fantasi","Korea","Serial"],"cH5a15IB4Nk","Goblin abadi mencari pengantin untuk akhiri kutukan.",67026,true,1],
+  ["Reply 1988","/5Z4o3IovTQl4rEKxKMVaRxkrXKm.jpg","2015","99","HD",["Drama","Korea","Serial"],"YmWJNXLfkMU","Persahabatan dan cinta keluarga di Seoul 1988.",62379,true,1],
+  ["Hospital Playlist","/xjjO3menU1bnUkYJMmzxVxHGarj.jpg","2020","98","HD",["Drama","Romantis","Korea","Serial"],"6sL8VZ2Hiqk","Lima dokter sahabat antara cinta dan karier.",103640,true,2],
+  ["Hometown Cha-Cha-Cha","/cPFQpKTKBFSoHOw7sBxNBV1myCt.jpg","2021","93","HD",["Romantis","Komedi","Korea","Serial"],"Dh_PMQB7UwQ","Dokter gigi pindah ke desa nelayan, jatuh cinta.",121530,true,1],
+  ["My Mister","/qkKlS7b3jWGZPrSuqRJ8sXGqxOl.jpg","2018","98","HD",["Drama","Korea","Serial"],"jG6v6QWWZFA","Hubungan tak terduga pria paruh baya dan wanita muda.",72967,true,1],
+  // ── ANIME ────────────────────────────────────────────────────────────
+  ["Attack on Titan","/hTP1DtLGFamjfu8WqjnuScObZja.jpg","2023","99","HD",["Anime","Aksi","Drama"],"MGRm4JgKFyE","Eren ungkap kebenaran menyakitkan di babak final.",1429,true,4],
+  ["Demon Slayer: Mugen Train","/h8Rb9gBr48ODIwYZ2Lh05bRnBnK.jpg","2020","97","HD",["Anime","Aksi"],"VXkwFMdrTUo","Tanjiro naik Kereta Mugen lawan iblis yang tertidur.",635302,false,0],
+  ["Jujutsu Kaisen","/fKRMkuVwcIRCaXQJJ9bvFYBJN6F.jpg","2023","98","HD",["Anime","Aksi","Fantasi"],"pkKu0azB3eA","Arc Shibuya: pertempuran paling epik dalam JJK.",95479,true,2],
+  ["Your Name","/q719jXXEzOoYaps6babgKnONONX.jpg","2016","98","HD",["Anime","Romantis","Fantasi"],"xU47nhW9oxI","Dua remaja bertukar jiwa berjuang saling menemukan.",372058,false,0],
+  ["Suzume","/oLP4O9cQjqr7fRHb7FNGHJBKdKC.jpg","2022","95","HD",["Anime","Petualangan","Romantis"],"BFZ0OLHV9KQ","Gadis menutup pintu-pintu bencana di Jepang.",916745,false,0],
+  ["The Boy and the Heron","/lMEqlvMvHAh5PomXUBKP28Hzqex.jpg","2023","95","HD",["Anime","Petualangan","Fantasi"],"WZOlBDmCJXo","Bocah jelajahi dunia paralel ajaib — mahakarya Miyazaki.",508965,false,0],
+  ["One Piece Film: Red","/54l0XFBaAn3cTHNpAOqLPdOQ7s8.jpg","2022","95","HD",["Anime","Aksi","Musikal"],"SmFi7RMLP28","Luffy temui penyanyi paling dicintai yang menyimpan rahasia.",895959,false,0],
+  // ── MUSIKAL & BIOGRAFI ───────────────────────────────────────────────
+  ["Bohemian Rhapsody","/lHu1wtNaczFPGFDTrjCSzeLPTKN.jpg","2018","88","HD",["Biografi","Musikal","Drama"],"mP0PVAZK1kA","Kebangkitan luar biasa Queen dan Freddie Mercury.",424694,false,0],
+  ["Elvis","/qBOKWqAFkev6e1QqHk7RV8V3GOf.jpg","2022","86","HD",["Biografi","Musikal","Drama"],"d_ByKggQRse","Hubungan kompleks Elvis Presley dengan sang manajer.",697843,false,0],
+  // ── ROMANTIS ─────────────────────────────────────────────────────────
+  ["Titanic","/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg","1997","96","4K",["Romantis","Drama","Sejarah"],"kVILuHNcMPE","Kisah cinta penumpang berbeda kelas di kapal yang tenggelam.",597,false,0],
+  ["The Notebook","/rNzQyW4f1iSqCvvbKqyNnlFj6NK.jpg","2004","90","HD",["Romantis","Drama"],"Im7BNYnHF6M","Kisah cinta pasangan muda yang terpisah kelas sosial.",11036,false,0],
+  ["Normal People","/fmLDZYBkqVBzYg2YbHHAkXFIloG.jpg","2020","95","HD",["Romantis","Drama","Serial"],"IsO3bGt6bAE","Cinta Connell dan Marianne yang naik turun.",90685,true,1],
+  // ── DOKUMENTER ───────────────────────────────────────────────────────
+  ["Free Solo","/hq7Ek8KVHV1MBtmLkPDn1I5iKSx.jpg","2018","97","HD",["Dokumenter","Petualangan"],"urRVZ4oAIOo","Alex Honnold daki El Capitan tanpa tali — pertama dalam sejarah.",543218,false,0],
+  ["The Last Dance","/mMxP8O7ixA8MLpPo6gMnmduTBWu.jpg","2020","99","HD",["Dokumenter","Olahraga","Serial"],"HDr1gQW2RAY","Dokumenter Michael Jordan dan dinasti Chicago Bulls.",94272,true,1],
+];
+
+/* ── EMBED SERVERS ──
+   Format per server (movie):
+     fn(tmdbId) => url
+   Format per server (tv):
+     fn(tmdbId, season, episode) => url
+─────────────────── */
+const SERVERS = [
+  {
+    name: 'VidSrc #1',
+    movie: function(id){ return 'https://vidsrc.me/embed/movie?tmdb=' + id; },
+    tv:    function(id, s, e){ return 'https://vidsrc.me/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + e; }
+  },
+  {
+    name: 'VidSrc #2',
+    movie: function(id){ return 'https://vidsrc.xyz/embed/movie?tmdb=' + id; },
+    tv:    function(id, s, e){ return 'https://vidsrc.xyz/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + e; }
+  },
+  {
+    name: '2Embed',
+    movie: function(id){ return 'https://www.2embed.cc/embed/' + id; },
+    tv:    function(id, s, e){ return 'https://www.2embed.cc/embedtv/' + id + '&s=' + s + '&e=' + e; }
+  },
+  {
+    name: 'MultiEmbed',
+    movie: function(id){ return 'https://multiembed.mov/?video_id=' + id + '&tmdb=1'; },
+    tv:    function(id, s, e){ return 'https://multiembed.mov/?video_id=' + id + '&tmdb=1&s=' + s + '&e=' + e; }
+  },
+  {
+    name: 'EmbedSu',
+    movie: function(id){ return 'https://embed.su/embed/movie/' + id; },
+    tv:    function(id, s, e){ return 'https://embed.su/embed/tv/' + id + '/' + s + '/' + e; }
+  },
+];
+
+/* ── STATE ── */
+const DMAP = new Map(DB.map(function(m){ return [m[0], m]; }));
+var state = { wl: new Set(), liked: new Set(), cur: null, srv: 0, season: 1, ep: 1 };
+
+/* ── POSTER ── */
+function pUrl(path){ return 'https://image.tmdb.org/t/p/w342' + path; }
+function mkFb(title, year){
+  var h = 0;
+  for(var i=0; i<title.length; i++) h = (h * 31 + title.charCodeAt(i)) & 0xffffff;
+  var h1 = h % 360, h2 = (h1 + 70) % 360;
+  var safe = title.length > 18 ? title.slice(0,17) + '…' : title;
+  var esc = safe.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300">' +
+    '<defs><linearGradient id="g" x1="0" y1="0" x2=".6" y2="1">' +
+    '<stop offset="0%" stop-color="hsl(' + h1 + ',48%,14%)"/>' +
+    '<stop offset="100%" stop-color="hsl(' + h2 + ',38%,8%)"/>' +
+    '</linearGradient></defs>' +
+    '<rect width="200" height="300" fill="url(#g)"/>' +
+    '<text x="100" y="138" font-family="sans-serif" font-size="11" font-weight="700" fill="rgba(255,255,255,.58)" text-anchor="middle">' + esc + '</text>' +
+    '<text x="100" y="160" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,.28)" text-anchor="middle">' + year + '</text>' +
+    '</svg>'
+  );
+}
+
+/* ── CARD ── */
+function mkCard(m, idx, isTop){
+  idx = (idx === undefined) ? -1 : idx;
+  isTop = isTop || false;
+  var title=m[0], poster=m[1], year=m[2], match=m[3], badge=m[4], isTv=m[9];
+  var img = pUrl(poster);
+  var fb  = mkFb(title, year);
+  var cb  = JSON.stringify(title);
+  var tvBadge = isTv ? '<span class="cB">Series</span>' : '';
+  var acts =
+    '<div class="cActs">' +
+    '<button class="cPlay" onclick="event.stopPropagation();openModal(' + cb + ')">&#9654;</button>' +
+    '<button class="cIco" onclick="event.stopPropagation();qAdd(' + cb + ')" title="Tambah">&#xFF0B;</button>' +
+    '<button class="cIco" onclick="event.stopPropagation();qLike(' + cb + ')" title="Suka">&#x1F44D;</button>' +
+    '</div>' +
+    '<div class="cName">' + title + '</div>' +
+    '<div class="cMeta"><span class="cM">' + match + '% Cocok</span><span class="cY">' + year + '</span><span class="cB">' + badge + '</span>' + tvBadge + '</div>';
+
+  if(isTop){
+    return '<div class="card cardT" onclick="openModal(' + cb + ')">' +
+      '<div class="tNum">' + (idx+1) + '</div>' +
+      '<div class="tPos">' +
+      '<img src="' + img + '" alt="' + title + '" loading="lazy" onerror="this.onerror=null;this.src=\'' + fb + '\'">' +
+      '<div class="cOv">' + acts + '</div>' +
+      '</div></div>';
+  }
+  return '<div class="card" onclick="openModal(' + cb + ')">' +
+    '<div class="cIn">' +
+    '<img class="cImg" src="' + img + '" alt="' + title + '" loading="lazy" onerror="this.onerror=null;this.src=\'' + fb + '\'">' +
+    '<div class="cOv">' + acts + '</div>' +
+    '</div></div>';
+}
+
+/* ── ROWS ── */
+var ROWS = [
+  {t:'🔥 Trending Sekarang',   fn:function(){return DB.slice().sort(function(){return Math.random()-.5}).slice(0,22);}},
+  {t:'🏆 Top 10 Indonesia',    fn:function(){return DB.filter(function(m){return +m[3]>=93}).slice(0,10);},top:true},
+  {t:'✨ Marvel Universe',      fn:function(){return DB.filter(function(m){return m[5].indexOf('Marvel')>=0});}},
+  {t:'💥 Aksi & Petualangan',  fn:function(){return DB.filter(function(m){return m[5].indexOf('Aksi')>=0}).slice(0,20);}},
+  {t:'📺 Serial Populer',      fn:function(){return DB.filter(function(m){return m[5].indexOf('Serial')>=0});}},
+  {t:'🎭 Drama & Thriller',    fn:function(){return DB.filter(function(m){return m[5].indexOf('Drama')>=0||m[5].indexOf('Thriller')>=0}).slice(0,18);}},
+  {t:'🚀 Sci-Fi & Fantasi',    fn:function(){return DB.filter(function(m){return m[5].indexOf('Sci-Fi')>=0||m[5].indexOf('Fantasi')>=0}).slice(0,16);}},
+  {t:'🇰🇷 Drama Korea',         fn:function(){return DB.filter(function(m){return m[5].indexOf('Korea')>=0});}},
+  {t:'👻 Horror & Suspense',   fn:function(){return DB.filter(function(m){return m[5].indexOf('Horror')>=0||m[5].indexOf('Mystery')>=0}).slice(0,16);}},
+  {t:'🎌 Anime',               fn:function(){return DB.filter(function(m){return m[5].indexOf('Anime')>=0});}},
+  {t:'😂 Komedi',              fn:function(){return DB.filter(function(m){return m[5].indexOf('Komedi')>=0});}},
+  {t:'❤️ Romantis',           fn:function(){return DB.filter(function(m){return m[5].indexOf('Romantis')>=0});}},
+  {t:'👨‍👩‍👧 Animasi & Keluarga', fn:function(){return DB.filter(function(m){return m[5].indexOf('Animasi')>=0||m[5].indexOf('Keluarga')>=0});}},
+  {t:'🔪 Crime & Mystery',     fn:function(){return DB.filter(function(m){return m[5].indexOf('Crime')>=0||m[5].indexOf('Mystery')>=0}).slice(0,16);}},
+  {t:'🎖️ Perang & Sejarah',    fn:function(){return DB.filter(function(m){return m[5].indexOf('Perang')>=0||m[5].indexOf('Sejarah')>=0});}},
+  {t:'🎶 Musikal & Biografi',  fn:function(){return DB.filter(function(m){return m[5].indexOf('Musikal')>=0||m[5].indexOf('Biografi')>=0});}},
+  {t:'🌍 Dokumenter',          fn:function(){return DB.filter(function(m){return m[5].indexOf('Dokumenter')>=0});}},
+  {t:'🔥 4K Ultra HD',         fn:function(){return DB.filter(function(m){return m[4]==='4K'});}},
+  {t:'⭐ Rating Tertinggi',    fn:function(){return DB.slice().sort(function(a,b){return +b[3]-+a[3]}).slice(0,20);}},
+  {t:'🎬 Film Klasik',         fn:function(){return DB.filter(function(m){return m[5].indexOf('Klasik')>=0});}},
+  {t:'🦸 Superhero',           fn:function(){return DB.filter(function(m){return m[5].indexOf('Superhero')>=0});}},
+];
+
+function buildHome(){
+  var html = '';
+  for(var i=0; i<ROWS.length; i++){
+    var row = ROWS[i];
+    var movies = row.fn();
+    if(!movies.length) continue;
+    var cards = '';
+    for(var j=0; j<movies.length; j++) cards += mkCard(movies[j], j, row.top||false);
+    html += '<div class="row"><div class="rHead"><span class="rTtl">' + row.t + '</span><span class="rMore">Lihat Semua &rsaquo;</span></div><div class="rTrack">' + cards + '</div></div>';
+  }
+  document.getElementById('main').innerHTML = html;
+}
+
+/* ── SEARCH ── */
+var sTimer;
+document.getElementById('sIn').addEventListener('input', function(){
+  var q = this.value.trim();
+  clearTimeout(sTimer);
+  sTimer = setTimeout(function(){ doSearch(q); }, 200);
+});
+function doSearch(q){
+  var hero=document.getElementById('hero'), main=document.getElementById('main');
+  var page=document.getElementById('sPage'), info=document.getElementById('sInfo'), grid=document.getElementById('sGrid');
+  if(!q){ hero.style.display=''; main.style.display=''; page.classList.remove('show'); setNav('home'); return; }
+  var ql = q.toLowerCase();
+  var found = DB.filter(function(m){
+    return m[0].toLowerCase().indexOf(ql)>=0 || m[5].some(function(t){return t.toLowerCase().indexOf(ql)>=0;}) || m[2].indexOf(ql)>=0;
+  });
+  hero.style.display='none'; main.style.display='none'; page.classList.add('show');
+  info.innerHTML = found.length ? '<b>'+found.length+'</b> hasil untuk "<b>'+q+'</b>"' : 'Tidak ditemukan untuk "<b>'+q+'</b>"';
+  var g=''; for(var i=0;i<found.length;i++) g+=mkCard(found[i]);
+  grid.innerHTML = g;
+}
+
+/* ── NAV ── */
+document.querySelectorAll('.nLink').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var f = this.getAttribute('data-f');
+    if(f==='home'){ document.getElementById('sIn').value=''; doSearch(''); }
+    else { document.getElementById('sIn').value=f; doSearch(f); }
+    setNav(f);
+  });
+});
+function setNav(f){ document.querySelectorAll('.nLink').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-f')===f); }); }
+function goHome(){ document.getElementById('sIn').value=''; doSearch(''); setNav('home'); }
+
+/* ── EMBED URL BUILDER ── */
+function buildUrl(){
+  var m = DMAP.get(state.cur); if(!m) return '';
+  var tmdbId=m[8], isTv=m[9];
+  var srv = SERVERS[state.srv];
+  if(!srv) return '';
+  if(isTv) return srv.tv(tmdbId, state.season, state.ep);
+  return srv.movie(tmdbId);
+}
+
+/* ── LOAD EMBED ── */
+function loadEmbed(){
+  var url = buildUrl();
+  if(url) document.getElementById('mFrame').src = url;
+}
+
+/* ── SWITCH SERVER ── */
+function switchServer(idx){
+  state.srv = idx;
+  document.querySelectorAll('.srvBtn').forEach(function(b, i){ b.classList.toggle('on', i===idx); });
+  loadEmbed();
+  showToast('🖥 Beralih ke ' + SERVERS[idx].name);
+}
+
+/* ── SWITCH EPISODE ── */
+function switchEp(s, e){
+  state.season = s; state.ep = e;
+  // update active style
+  document.querySelectorAll('.epBtn').forEach(function(b){
+    b.classList.toggle('on', +b.dataset.s===s && +b.dataset.e===e);
+  });
+  loadEmbed();
+}
+
+/* ── BUILD EPISODE PICKER ── */
+function buildEpPicker(seasons){
+  var epDiv = document.getElementById('mEpisodes');
+  var sels  = document.getElementById('epSels');
+  if(!seasons || seasons < 1){ epDiv.classList.remove('show'); return; }
+  epDiv.classList.add('show');
+
+  // Season select
+  var sOpts = '';
+  for(var s=1; s<=seasons; s++) sOpts += '<option value="'+s+'"'+(s===state.season?' selected':'')+'>Season '+s+'</option>';
+  // Episode quick buttons (ep 1-12)
+  var eBtns = '';
+  for(var e=1; e<=12; e++){
+    var isOn = (e===state.ep) ? ' on' : '';
+    eBtns += '<button class="epSel epBtn'+isOn+'" data-s="'+state.season+'" data-e="'+e+'" onclick="switchEp(parseInt(document.getElementById(\'sSel\').value),'+e+')">Ep '+e+'</button>';
+  }
+  sels.innerHTML =
+    '<select id="sSel" class="epSel" onchange="state.season=+this.value;buildEpPicker('+seasons+')">'+sOpts+'</select>' +
+    eBtns;
+}
+
+/* ── OPEN MODAL ── */
+function openModal(title){
+  var m = DMAP.get(title); if(!m) return;
+  var t=m[0], poster=m[1], yr=m[2], mt=m[3], bd=m[4], tg=m[5], yt=m[6], ds=m[7], tmdbId=m[8], isTv=m[9], seasons=m[10];
+  state.cur = title; state.srv = 0; state.season = 1; state.ep = 1;
+
+  // Reset server buttons
+  document.querySelectorAll('.srvBtn').forEach(function(b,i){ b.classList.toggle('on',i===0); });
+
+  // Info
+  document.getElementById('mTitle').textContent = t;
+  document.getElementById('mMeta').innerHTML =
+    '<span class="mMatch">'+mt+'% Cocok</span>' +
+    '<span class="mYear">'+yr+'</span>' +
+    '<span class="mHd">'+bd+'</span>' +
+    (isTv ? '<span class="mHd">Series</span>' : '');
+  document.getElementById('mDesc').textContent = ds;
+  document.getElementById('mTags').innerHTML = tg.map(function(x){ return '<span class="mTag">'+x+'</span>'; }).join('');
+
+  // Watchlist/like buttons
+  var wl=document.getElementById('bWL'), lk=document.getElementById('bLike');
+  wl.textContent = state.wl.has(title) ? '✓' : '＋';
+  wl.classList.toggle('on', state.wl.has(title));
+  lk.classList.toggle('on', state.liked.has(title));
+
+  // Episode picker
+  buildEpPicker(isTv ? seasons : 0);
+
+  // Load embed
+  loadEmbed();
+
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+/* ── CLOSE MODAL ── */
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('mFrame').src = '';
+  document.getElementById('mEpisodes').classList.remove('show');
+  document.body.style.overflow = '';
+  state.cur = null;
+}
+function bgClose(e){ if(e.target===document.getElementById('modal')) closeModal(); }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+
+/* ── WATCHLIST / LIKE ── */
+function toggleWL(){
+  var t=state.cur; if(!t)return;
+  var btn=document.getElementById('bWL');
+  if(state.wl.has(t)){ state.wl.delete(t); btn.textContent='＋'; btn.classList.remove('on'); showToast('Dihapus dari Daftar Saya'); }
+  else { state.wl.add(t); btn.textContent='✓'; btn.classList.add('on'); showToast('✅ Ditambahkan ke Daftar Saya'); }
+}
+function toggleLike(){
+  var t=state.cur; if(!t)return;
+  var btn=document.getElementById('bLike');
+  if(state.liked.has(t)){ state.liked.delete(t); btn.classList.remove('on'); }
+  else { state.liked.add(t); btn.classList.add('on'); showToast('👍 Disukai!'); }
+}
+function doNotify(){ showToast('🔔 Notifikasi diaktifkan!'); }
+function qAdd(t){ state.wl.add(t); showToast('✅ Ditambahkan ke Daftar Saya'); }
+function qLike(t){ state.liked.add(t); showToast('👍 Disukai!'); }
+
+/* ── TOAST ── */
+var tTimer;
+function showToast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(tTimer); tTimer=setTimeout(function(){ el.classList.remove('show'); }, 2800);
+}
+
+/* ── SCROLL ── */
+window.addEventListener('scroll', function(){ document.getElementById('nav').classList.toggle('solid', window.scrollY>60); }, {passive:true});
+
+/* ── INIT ── */
+document.getElementById('heroBg').style.backgroundImage = "url('https://image.tmdb.org/t/p/original/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg')";
+buildHome();
+</script>
+</body>
+</html>
