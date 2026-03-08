@@ -1,0 +1,51 @@
+{
+  "name": "MovieWind",
+  "short_name": "MovieWind",
+  "description": "Nonton film & series online gratis dengan subtitle Indonesia",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0f0f",
+  "theme_color": "#e50914",
+  "lang": "id",
+  "categories": ["entertainment"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Trending",
+      "short_name": "Trending",
+      "description": "Film trending hari ini",
+      "url": "/?filter=trending",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Film Acak",
+      "short_name": "Acak",
+      "description": "Putar film secara acak",
+      "url": "/?surprise=1",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
